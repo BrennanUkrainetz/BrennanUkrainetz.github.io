@@ -74,15 +74,19 @@
     // Handle record changes
     grist.onRecord(async function(record) {
       try {
-        console.log('Record received:', record);
+        console.log('Record received (display values):', record);
         
-        // Get the Equipment_Worked_on reference list
-        const equipmentIds = record.Equipment_Worked_on || [];
-        console.log('Equipment IDs:', equipmentIds);
+        // Fetch the record again with encoded values to get row IDs
+        const encodedRecord = await grist.fetchSelectedRecord({ keepEncoded: true });
+        console.log('Record with row IDs:', encodedRecord);
         
-        // Get the Company reference
-        const companyId = record.Company;
-        console.log('Company ID:', companyId);
+        // Get the Equipment_Worked_on reference list (now we get row IDs)
+        const equipmentIds = encodedRecord.Equipment_Worked_on || [];
+        console.log('Equipment row IDs:', equipmentIds);
+        
+        // Get the Company reference (now we get the row ID)
+        const companyId = encodedRecord.Company;
+        console.log('Company row ID:', companyId);
         
         let equipmentTypes = [];
         let customerName = '';
@@ -111,9 +115,11 @@
         if (companyId) {
           try {
             const companiesTable = await grist.docApi.fetchTable('COMPANIES');
-            console.log('Companies table fetched:', companiesTable);
+            console.log('Companies table fetched');
             
             const rowIndex = companiesTable.id.indexOf(companyId);
+            console.log('Looking for company row ID:', companyId, 'Found at index:', rowIndex);
+            
             if (rowIndex !== -1 && companiesTable.Customer) {
               customerName = companiesTable.Customer[rowIndex];
             }
